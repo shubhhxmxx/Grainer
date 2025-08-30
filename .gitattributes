@@ -1,0 +1,14 @@
+* text=auto
+
+# Scripts
+mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Text files
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf

@@ -1,0 +1,44 @@
+# Java
+*.class
+*.hprof
+hs_err_pid*
+
+# Maven
+target/
+pom.xml.versionsBackup
+.mvn/timing.properties
+!.mvn/wrapper/maven-wrapper.jar
+# mvn wrappers should be committed
+mvnw
+mvnw.cmd
+
+# IDEs
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.factorypath
+.apt_generated/
+.vscode/
+.metadata/
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local data (don’t commit CSVs)
+data/
+*.csv
+*.xlsx
+
+# Env/secrets
+.env
+.env.*
+application-local.properties
+application-*.local.properties
