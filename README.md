@@ -116,3 +116,8 @@ Notes:
 
 - .gitignore excludes IDE/build/data artifacts and secrets.
 - .gitattributes enforces line endings and text normalization.
+
+<img width="625" height="582" alt="Screenshot 2025-08-31 040852" src="https://github.com/user-attachments/assets/d4a4476d-635d-4ea2-b1e2-d49001855f7d" />
+
+
+
