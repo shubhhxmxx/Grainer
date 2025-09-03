@@ -1,0 +1,5 @@
+.spacer { flex: 1 1 auto; }
+main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+nav { display: flex; gap: 8px; align-items: center; }
+.active { background: rgba(255, 255, 255, 0.08); }
+mat-icon { margin-right: 4px; }

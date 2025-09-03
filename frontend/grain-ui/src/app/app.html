@@ -1,0 +1,40 @@
+<mat-toolbar color="primary">
+  <span>Grain</span>
+  <span class="spacer"></span>
+  <nav>
+    <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon>home</mat-icon> Home
+    </a>
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">
+      <mat-icon>dashboard</mat-icon> Datasets
+    </a>
+    <a mat-button routerLink="/preferences" routerLinkActive="active">
+      <mat-icon>settings</mat-icon> Preferences
+    </a>
+    <a mat-stroked-button color="accent" routerLink="/upload">
+      <mat-icon>upload_file</mat-icon> Upload
+    </a>
+
+    <a *ngIf="!auth.isAuthenticated()" mat-button routerLink="/signin">
+      <mat-icon>login</mat-icon> Sign In
+    </a>
+    <a *ngIf="!auth.isAuthenticated()" mat-button routerLink="/signup">
+      <mat-icon>person_add</mat-icon> Sign Up
+    </a>
+    <button *ngIf="auth.isAuthenticated()" mat-button (click)="signOut()">
+      <mat-icon>logout</mat-icon> Sign Out
+    </button>
+  </nav>
+</mat-toolbar>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<style>
+  .spacer { flex: 1 1 auto; }
+  main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+  nav { display: flex; gap: 8px; align-items: center; }
+  .active { background: rgba(255, 255, 255, 0.08); }
+  mat-icon { margin-right: 4px; }
+</style>

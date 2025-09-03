@@ -1,0 +1,8 @@
+@use '@angular/material' as mat;
+
+/* Dark theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+html, body { height: 100%; margin: 0; background: #121212; }
+app-root, main { display: block; min-height: 100%; }
+/* For dark theme it's fine to keep: */
