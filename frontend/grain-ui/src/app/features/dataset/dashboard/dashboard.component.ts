@@ -35,9 +35,13 @@ import { Dataset } from '../../../core/models';
           <mat-card-content>
             <div class="status-row">
               <mat-chip-set>
-                <mat-chip [color]="ds.progress?.status === 'Active' ? 'accent' : undefined">
-                  {{ ds.progress?.status || 'Unknown' }}
+                <!-- Show real status if present -->
+                <mat-chip *ngIf="ds.progress?.status as s" [color]="s === 'Active' ? 'accent' : undefined">
+                  {{ s }}
                 </mat-chip>
+                <!-- Otherwise show Not Subscribed (or hide entirely by removing this chip) -->
+                <mat-chip *ngIf="!ds.progress">0</mat-chip>
+
                 <mat-chip *ngIf="ds.useAi">AI Enabled</mat-chip>
               </mat-chip-set>
             </div>
@@ -48,6 +52,10 @@ import { Dataset } from '../../../core/models';
               [value]="((ds.progress?.lastSentItem ?? 0) / (ds.itemCount || 1)) * 100">
             </mat-progress-bar>
           </mat-card-content>
+
+          <mat-card-actions>
+            <button mat-stroked-button color="warn" (click)="onUnsubscribe(ds)">Unsubscribe</button>
+          </mat-card-actions>
         </mat-card>
       </div>
 
@@ -70,12 +78,14 @@ export class DashboardComponent implements OnInit {
   datasets: Dataset[] = [];
   loading = false;
   error?: string;
+  private userId = 0;
 
   constructor(private api: ApiService) {}
 
   ngOnInit() {
     const userId = Number(localStorage.getItem('userId'));
     if (!userId) { this.error = 'Please sign up first'; return; }
+    this.userId = userId; // keep for unsubscribe
     this.loading = true;
     this.api.getDatasets(userId).subscribe({
       next: (data) => { this.datasets = data; this.loading = false; },
@@ -84,4 +94,21 @@ export class DashboardComponent implements OnInit {
   }
 
   trackById(_: number, ds: Dataset) { return (ds as any).id ?? _; }
+
+  onUnsubscribe(ds: Dataset) {
+    const datasetId = Number((ds as any).id);
+    if (!this.userId || !datasetId) return;
+    this.loading = true;
+    this.api.unsubscribeFromDataset(this.userId, datasetId).subscribe({
+      next: () => {
+        // remove from list or refresh
+        this.datasets = this.datasets.filter(d => (d as any).id !== datasetId);
+        this.loading = false;
+      },
+      error: (e) => {
+        this.error = e?.error?.message || 'Failed to unsubscribe';
+        this.loading = false;
+      }
+    });
+  }
 }
