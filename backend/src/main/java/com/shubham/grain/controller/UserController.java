@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shubham.grain.dto.UserRegisterationDto;
 import com.shubham.grain.dto.UserResponseDto;
+import com.shubham.grain.service.AiService;
 import com.shubham.grain.service.UserEmailService;
 import com.shubham.grain.service.UserService;
 
@@ -27,6 +28,9 @@ public class UserController {
 	
 	@Autowired
 	private UserEmailService userEmailService;
+	
+	@Autowired
+	private AiService aiService;
 	
 	@PostMapping("/create")
     public ResponseEntity<UserResponseDto> createUser( @RequestBody UserRegisterationDto userRegistrationDto) {
@@ -44,6 +48,11 @@ public class UserController {
 	@GetMapping(value = "/testMail")
 	public void sendEmail() {
 		userEmailService.sendDailyMail();
+	}
+	
+	@GetMapping(value = "/testAi")
+	public ResponseEntity<String> testAi() {
+		return ResponseEntity.ok(aiService.getAiContent("countries", "INDIA"));
 	}
 	@PostMapping(value = "/signin")
     public ResponseEntity<UserResponseDto> signIn(@RequestBody UserRegisterationDto dto) {

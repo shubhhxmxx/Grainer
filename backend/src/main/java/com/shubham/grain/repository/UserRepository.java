@@ -14,10 +14,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByEmail(String email);
 
-    @EntityGraph(attributePaths = { "userDataSets", "userDataSets.userProgress" })
+    @EntityGraph(attributePaths = { "subscriptions","subscriptions.userDataSet","subscriptions.userDataSet.user" })
     Optional<User> findWithRelationsByUserId(Integer userId);
     
-    @Query("select distinct u from User u join u.userDataSets uds join uds.userProgress up where up.status = :status")
+    @Query("select distinct u from User u join u.userDataSets uds join uds.subscriptions subs where subs.status = :status")
     List<User> findAllUsersWithActiveDataSets(@Param("status") String status);
     
     Optional<User> findByEmail(String email);

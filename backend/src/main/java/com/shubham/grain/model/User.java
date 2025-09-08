@@ -1,10 +1,14 @@
 package com.shubham.grain.model;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,22 +39,41 @@ public class User {
 	
 	private String name;
 	
-	@OneToMany(mappedBy = "user",cascade = CascadeType.ALL ,orphanRemoval = true)
-	List<UserDataSet> userDataSets;
+	@OneToMany(mappedBy = "user",cascade = CascadeType.ALL ,orphanRemoval = true,fetch = FetchType.LAZY)
+	@BatchSize(size = 20)
+	List<UserDataSet> userDataSets=new ArrayList<>();
+	
+	@OneToMany(mappedBy = "user" , cascade = CascadeType.ALL , orphanRemoval = true,fetch = FetchType.LAZY)
+	@BatchSize(size = 20)
+	List<DataSetSubscription> subscriptions=new ArrayList<>();
 	
 	public User(String name,String email) {
 		this.email=email;
 		this.name=name;
 		
 	}
-	public void addUserDataSet(UserDataSet uds) {
-        userDataSets.add(uds);
-        uds.setUser(this); // keep owning side in sync
-    }
 	
-	public void removeUserDataSet(UserDataSet uds) {
-        userDataSets.remove(uds);
-        uds.setUser(null); // detach owning side so orphanRemoval can delete it
-    }
+	public void addDataSet(UserDataSet u){
+		userDataSets.add(u);
+		u.setUser(this);
+	}
+	
+	public void removeDataSet(UserDataSet u) {
+		userDataSets.remove(u);
+		u.setUser(null);
+	}
+	public void addSubscription(DataSetSubscription d){
+		subscriptions.add(d);
+		d.setUser(this);
+	}
+	
+	public void removesubscription(UserDataSet u) {
+		subscriptions.remove(u);
+		u.setUser(null);
+	}
+	
+	
+	
+	
 	
 }

@@ -1,6 +1,7 @@
 package com.shubham.grain.service;
 
 import java.io.BufferedReader;
+
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.shubham.grain.dto.UserDataSetDTO;
 import com.shubham.grain.dto.UserResponseDto;
 import com.shubham.grain.mapper.UserDataSetMapper;
+import com.shubham.grain.model.DataSetSubscription;
 import com.shubham.grain.model.User;
 import com.shubham.grain.model.UserDataSet;
 import com.shubham.grain.model.UserDataSetItem;
-import com.shubham.grain.model.UserProgress;
+import com.shubham.grain.repository.DataSetSubscriptionRepository;
 import com.shubham.grain.repository.UserDataSetRepository;
 import com.shubham.grain.repository.UserRepository;
 
@@ -34,6 +36,9 @@ public class UserDataSetService {
 	@Autowired
 	private UserDataSetRepository userDataSetRepository;
 	
+	@Autowired
+	private DataSetSubscriptionRepository dataSetSubscriptionRepository;
+	
 	@Transactional
 	public UserDataSetDTO uploadCsv(Integer userId,MultipartFile file,String topic) {
 		User user;
@@ -47,8 +52,8 @@ public class UserDataSetService {
 		}
 		UserDataSet userDataSet=new UserDataSet();
 		userDataSet.setUser(user);
-		userDataSet.setUserProgress(new UserProgress());
 		userDataSet.setTopic(topic);
+		userDataSet.setPublicVisible(true);
 		try(BufferedReader reader=new BufferedReader(new InputStreamReader(file.getInputStream()))){
 			String[] header=reader.readLine().split(",");
 			
@@ -71,6 +76,15 @@ public class UserDataSetService {
 			return new UserDataSetDTO(e.getMessage());
 		}
 		userDataSet=userDataSetRepository.save(userDataSet);
+		
+		// create subscription for user
+		DataSetSubscription dataSetSubscription=DataSetSubscription.builder()
+				.currentIndex(0)
+				.user(user)
+				.userDataSet(userDataSet)
+				.aiEnabled(false)
+				.status("Active").build();
+		dataSetSubscriptionRepository.save(dataSetSubscription);
 		return userDataSetMapper.toDto(userDataSet);
 	}
 }

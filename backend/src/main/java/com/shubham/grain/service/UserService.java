@@ -1,15 +1,19 @@
 package com.shubham.grain.service;
 
+import java.util.List;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.shubham.grain.dto.UserDataSetDTO;
 import com.shubham.grain.dto.UserRegisterationDto;
 import com.shubham.grain.dto.UserResponseDto;
+import com.shubham.grain.mapper.UserDataSetMapper;
 import com.shubham.grain.mapper.UserMapper;
 import com.shubham.grain.model.User;
+import com.shubham.grain.model.UserDataSet;
 import com.shubham.grain.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +27,9 @@ public class UserService {
 	
 	@Autowired
 	private UserMapper userMapper;
+	
+	@Autowired
+	private UserDataSetMapper userDataSetMapper;
 	
 	@Transactional
 	public UserResponseDto createUser(UserRegisterationDto userRegisterationDto) {
@@ -43,7 +50,9 @@ public class UserService {
 			User user=userRepository.findWithRelationsByUserId(userId).orElseThrow(
 				()-> new EntityNotFoundException("User with this id does not exisits")
 			);
-			return userMapper.toUserReposnseDto(user);
+			
+			List<UserDataSet> subsribedList=user.getSubscriptions().stream().map(s->(s.getUserDataSetForDTO())).collect(Collectors.toList());
+			return  userMapper.toUserReposnseDto(user,subsribedList);
 
 		}catch(Exception e){
 			return new UserResponseDto(e.getMessage());

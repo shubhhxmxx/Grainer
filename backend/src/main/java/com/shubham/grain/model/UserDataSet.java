@@ -21,6 +21,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -33,7 +34,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_data_set", indexes = {
-    @Index(name = "idx_userdataset_user", columnList = "user_id")
+    @Index(name = "idx_userdataset_user", columnList = "owner_id")
 })
 public class UserDataSet {
 	@Id
@@ -45,33 +46,25 @@ public class UserDataSet {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_data_set_seq")
 	private Integer userDataSetId;
 	
-	@ManyToOne(fetch = FetchType.LAZY,optional=false)
-	@JoinColumn(name = "user_id")
+	@ManyToOne
+	@JoinColumn(name =  "owner_id")
 	private User user;
 	
-	@OneToOne(mappedBy = "userDataSet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private UserProgress userProgress;
+	@OneToMany(mappedBy = "userDataSet", cascade = CascadeType.ALL , orphanRemoval = true)
+	private List<DataSetSubscription> subscriptions=new ArrayList<>();
 	
+	
+	@Transient
+	private Integer currentIndex;
 	@OneToMany(mappedBy = "userDataSet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 50)         
     private List<UserDataSetItem> items = new ArrayList<>();
 	
+	
 	private String topic;
 	
+	private boolean publicVisible;
 	
-	public void setUser(User user) {
-        this.user = user;
-        if (user != null && (user.getUserDataSets() == null || !user.getUserDataSets().contains(this))) {
-            user.addUserDataSet(this);
-        }
-    }
-
-    public void setUserProgress(UserProgress progress) {
-        this.userProgress = progress;
-        if (progress != null && progress.getUserDataSet() != this) {
-            progress.setUserDataSet(this);
-        }
-    }
 
     public void addItem(UserDataSetItem item) {
         items.add(item);
@@ -82,5 +75,12 @@ public class UserDataSet {
         items.remove(item);
         item.setUserDataSet(null);
     }
-	
+    public void addSubscription(DataSetSubscription subscription) {
+        subscriptions.add(subscription);
+        subscription.setUserDataSet(this);
+    }
+    public void removeSubscription(DataSetSubscription subscription) {
+        subscriptions.remove(subscription);
+        subscription.setUserDataSet(null);
+    }
 }

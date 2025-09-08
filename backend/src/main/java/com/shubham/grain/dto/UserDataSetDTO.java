@@ -15,7 +15,7 @@ import lombok.Setter;
 public class UserDataSetDTO {
 	
     private Integer id;
-    private UserProgressDTO progress;
+    private Integer progress;
     private Integer itemCount;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String message;
