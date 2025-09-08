@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, FormGroup } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, FormControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { ApiService } from '../../../core/services/api.service';
-import { Preferences } from '../../../core/models';
+import { Dataset } from '../../../core/models';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -22,23 +24,28 @@ import { ActivatedRoute } from '@angular/router';
     MatButtonModule,
     MatProgressBarModule,
     MatSelectModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatSnackBarModule,
+    MatFormFieldModule
   ],
   template: `
     <div class="container">
       <mat-card>
         <mat-card-header><mat-card-title>Learning Preferences</mat-card-title></mat-card-header>
         <mat-card-content>
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <form [formGroup]="form" (ngSubmit)="onSubscribe()">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Topics (comma-separated)</mat-label>
-              <input matInput [value]="topicsCsv" (input)="onTopicsCsvChange($event)" placeholder="news, tech, science">
-              <mat-hint>Enter topics separated by commas</mat-hint>
+              <mat-label>Select a public topic</mat-label>
+              <mat-select formControlName="datasetId" required>
+                <mat-option *ngFor="let t of publicTopics" [value]="t.id">
+                  {{ t.topic }}
+                </mat-option>
+              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email Frequency</mat-label>
-              <mat-select formControlName="frequency">
+              <mat-select formControlName="frequency" required>
                 <mat-option value="daily">Daily</mat-option>
                 <mat-option value="weekly">Weekly</mat-option>
               </mat-select>
@@ -46,8 +53,8 @@ import { ActivatedRoute } from '@angular/router';
 
             <mat-slide-toggle formControlName="useAi" class="mt-3">Enable AI Enrichment</mat-slide-toggle>
 
-            <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width mt-3">
-              Save Preferences
+            <button mat-raised-button color="primary" type="submit" [disabled]="saving" class="full-width mt-3">
+              Subscribe
             </button>
           </form>
 
@@ -60,54 +67,65 @@ import { ActivatedRoute } from '@angular/router';
   `,
   styles: [`.container{max-width:600px;margin:2rem auto;padding:0 1rem}.full-width{width:100%}mat-form-field{margin-bottom:1rem}.mt-3{margin-top:1rem}.error{color:#f44336;margin-top:1rem}.success{color:#4caf50;margin-top:1rem}`]
 })
-export class PreferencesComponent {
+export class PreferencesComponent implements OnInit {
+  // Use id + topic pairs from /datasets/public
+  publicTopics: { id: number; topic: string }[] = [];
   loading = false;
+  saving = false;
+  userId = 0;
   error?: string;
   success?: string;
 
-  form!: FormGroup;
+  form = new FormGroup({
+    datasetId: new FormControl<number | null>(null, Validators.required),
+    frequency: new FormControl<'daily' | 'weekly'>('daily', Validators.required),
+    useAi: new FormControl<boolean>(false)
+  });
 
-  constructor(private fb: FormBuilder, private api: ApiService, private route: ActivatedRoute) {
-    this.form = this.fb.group({
-      topics: [[] as string[]],
-      frequency: ['daily', Validators.required],
-      useAi: [false]
-    });
+  constructor(
+    private api: ApiService,
+    private route: ActivatedRoute,
+    private snack: MatSnackBar
+  ) {}
 
-    const saved = localStorage.getItem('prefs');
-    if (saved) {
-      try { this.form.setValue(JSON.parse(saved)); } catch {}
-    }
-
-    const prefill = this.route.snapshot.queryParamMap.get('prefillTopic');
-    if (prefill) {
-      const topics = new Set<string>([...(this.form.value.topics || []), prefill]);
-      this.form.patchValue({ topics: Array.from(topics) });
-    }
-  }
-
-  get topicsCsv(): string {
-    return (this.form.value.topics || []).join(', ');
-  }
-
-  onTopicsCsvChange(e: Event) {
-    const value = (e.target as HTMLInputElement).value || '';
-    const topics = value.split(',').map(s => s.trim()).filter(Boolean);
-    this.form.patchValue({ topics });
-  }
-
-  onSubmit() {
-    const userId = Number(localStorage.getItem('userId'));
-    if (!userId) { this.error = 'Please sign up first'; return; }
-
+  ngOnInit() {
+    this.userId = Number(localStorage.getItem('userId')) || 0;
     this.loading = true;
-    this.error = this.success = undefined;
 
-    const prefs = this.form.value as Preferences;
-    localStorage.setItem('prefs', JSON.stringify(prefs));
-    this.api.savePreferences(userId, prefs).subscribe({
-      next: () => { this.success = 'Preferences saved'; this.loading = false; },
-      error: (e) => { this.error = e?.error?.message || 'Failed to save preferences'; this.loading = false; }
+    // Use the typed helper to avoid Dataset -> {id, topic} mismatch
+    this.api.getPublicTopics().subscribe({
+      next: (topics) => {
+        this.publicTopics = topics;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  onSubscribe() {
+    if (!this.userId) { this.snack.open('Please sign in', 'Dismiss', { duration: 2500 }); return; }
+    const datasetId = Number(this.form.value.datasetId);
+    if (!datasetId) { this.snack.open('Select a topic', 'Dismiss', { duration: 2000 }); return; }
+
+    this.saving = true;
+    this.api.subscribeToDataset({
+      userId: this.userId,
+      datasetId,
+      frequency: this.form.value.frequency!,
+      aiEnabled: this.form.value.useAi!
+    }).subscribe({
+      next: (res: any) => {
+        const msg = res?.message || res?.status || 'Subscribed';
+        this.success = msg;
+        this.snack.open(msg, 'OK', { duration: 3000 });
+        this.saving = false;
+      },
+      error: (e) => {
+        const msg = e?.error?.message || 'Failed to subscribe';
+        this.error = msg;
+        this.snack.open(msg, 'Dismiss', { duration: 3500 });
+        this.saving = false;
+      }
     });
   }
 }

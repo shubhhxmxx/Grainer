@@ -4,8 +4,14 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full', // prevent overlap with other routes
     loadComponent: () =>
       import('./features/home.component/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'public',
+    loadComponent: () =>
+      import('./features/public/public.dataset.component').then(m => m.PublicDatasetsComponent)
   },
   {
     path: 'signup',
@@ -40,5 +46,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/dataset/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'public' }
 ];

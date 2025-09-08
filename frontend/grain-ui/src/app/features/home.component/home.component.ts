@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Dataset } from '../../core/models';
+import { PublicDatasetsComponent } from '../public/public.dataset.component';
 
 @Component({
   selector: 'app-home',
@@ -22,7 +23,8 @@ import { Dataset } from '../../core/models';
     MatChipsModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    PublicDatasetsComponent
   ],
   template: `
     <div class="container">
@@ -84,6 +86,10 @@ import { Dataset } from '../../core/models';
         </mat-card>
       </div>
     </div>
+
+    <section style="margin-top: 24px;">
+      <app-public-datasets></app-public-datasets>
+    </section>
   `,
   styles: [`
     .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
