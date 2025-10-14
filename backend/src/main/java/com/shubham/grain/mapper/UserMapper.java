@@ -17,11 +17,11 @@ import com.shubham.grain.mapper.UserDataSetMapper;
 public interface UserMapper {
 	   
 	@Mapping(source = "userDataSets", target = "userDataSets")
-	UserResponseDto toUserReposnseDto(User user);
+	UserResponseDto toUserResponseDto(User user);
 	
 	   
 	@Mapping(source = "all", target = "userDataSets")
-	UserResponseDto toUserReposnseDto(User user,List<UserDataSet> all);
+	UserResponseDto toUserResponseDto(User user,List<UserDataSet> all);
 	
 	@Mapping(target = "userId", ignore = true)
     @Mapping(target = "userDataSets", ignore = true)

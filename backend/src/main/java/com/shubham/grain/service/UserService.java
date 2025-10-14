@@ -39,7 +39,7 @@ public class UserService {
 
 		User user = userMapper.toEntity(userRegisterationDto);
 		user=userRepository.save(user);
-		UserResponseDto userResponseDto=userMapper.toUserReposnseDto(user);
+		UserResponseDto userResponseDto=userMapper.toUserResponseDto(user);
 		return userResponseDto;
 	}
 	
@@ -52,7 +52,7 @@ public class UserService {
 			);
 			
 			List<UserDataSet> subsribedList=user.getSubscriptions().stream().map(s->(s.getUserDataSetForDTO())).collect(Collectors.toList());
-			return  userMapper.toUserReposnseDto(user,subsribedList);
+			return  userMapper.toUserResponseDto(user,subsribedList);
 
 		}catch(Exception e){
 			return new UserResponseDto(e.getMessage());
@@ -62,18 +62,18 @@ public class UserService {
 	@Transactional
     public UserResponseDto signIn(String email) {
         return userRepository.findByEmail(email)
-            .map(userMapper::toUserReposnseDto)
+            .map(userMapper::toUserResponseDto)
             .orElseGet(() -> new UserResponseDto("User not found"));
     }
 
     @Transactional
     public UserResponseDto signInOrCreate(UserRegisterationDto dto) {
         return userRepository.findByEmail(dto.getEmail())
-            .map(userMapper::toUserReposnseDto)
+            .map(userMapper::toUserResponseDto)
             .orElseGet(() -> {
                 User user = userMapper.toEntity(dto);
                 user = userRepository.save(user);
-                return userMapper.toUserReposnseDto(user);
+                return userMapper.toUserResponseDto(user);
             });
     }
 }
