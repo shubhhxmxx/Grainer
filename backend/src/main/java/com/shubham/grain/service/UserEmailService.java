@@ -30,7 +30,7 @@ public class UserEmailService {
     private AiService aiservice;
     
     @Transactional
-    @Scheduled(cron = "0 7 13 * * *")
+    @Scheduled(cron = "0 30 14 * * *")
     public void sendDailyMail() {
         List<User> activeUsers = userRepository.findAllUsersWithActiveDataSets("Active");
         for (User user : activeUsers) {
