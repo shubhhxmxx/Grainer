@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { User, Preferences, Dataset } from '../models'; // import shared Dataset
-
+import {environment} from '../../../environments/environment';
 export interface SubscribeRequest {
   userId: number;
   datasetId: number;
@@ -22,8 +22,7 @@ export interface SubscribeResponse {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = 'http://localhost:8838/';
-
+  private baseUrl = environment.apiBaseUrl;
   constructor(private http: HttpClient) {}
 
   signup(user: { name: string; email: string; password?: string }): Observable<User> {
