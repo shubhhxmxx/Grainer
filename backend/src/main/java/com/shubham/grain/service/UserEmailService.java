@@ -29,8 +29,11 @@ public class UserEmailService {
     @Autowired
     private AiService aiservice;
     
+    @Autowired
+    private SendGridMailService sendGridMailService;
+    
     @Transactional
-    @Scheduled(cron = "0 7 * * *")
+    @Scheduled(cron = "${mail.timing}")
     public void sendDailyMail() {
         List<User> activeUsers = userRepository.findAllUsersWithActiveDataSets("Active");
         for (User user : activeUsers) {
@@ -109,13 +112,7 @@ public class UserEmailService {
 
     public void sendEmail(String email, String subject, String htmlContent) {
         try {
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
-            helper.setFrom("grainerlearn@gmail.com");
-            helper.setTo(email);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true); // HTML
-            javaMailSender.send(mimeMessage);
+           sendGridMailService.sendEmail(email, subject, htmlContent);
         } catch (Exception e) {
             System.out.println("e:" + e.getMessage());
         }

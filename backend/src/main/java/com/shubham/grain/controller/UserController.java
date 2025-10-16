@@ -1,6 +1,8 @@
 package com.shubham.grain.controller;
 
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shubham.grain.dto.UserRegisterationDto;
 import com.shubham.grain.dto.UserResponseDto;
 import com.shubham.grain.service.AiService;
+import com.shubham.grain.service.SendGridMailService;
 import com.shubham.grain.service.UserEmailService;
 import com.shubham.grain.service.UserService;
 
@@ -28,6 +31,8 @@ public class UserController {
 	
 	@Autowired
 	private UserEmailService userEmailService;
+	@Autowired
+	private SendGridMailService sendGridMailService;
 	
 	@Autowired
 	private AiService aiService;
@@ -46,7 +51,7 @@ public class UserController {
 	}
 	
 	@GetMapping(value = "/testMail")
-	public void sendEmail() {
+	public void sendEmail() throws IOException {
 		userEmailService.sendDailyMail();
 	}
 	

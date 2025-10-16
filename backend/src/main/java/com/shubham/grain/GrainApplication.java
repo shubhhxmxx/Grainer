@@ -24,7 +24,6 @@ public class GrainApplication {
 	
 	@Bean
 	Client client() {
-		System.out.println("apikey:"+apiKey);
 		return Client.builder().apiKey(apiKey).build();
 	}
 	@Bean
